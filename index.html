@@ -1,0 +1,29 @@
+<html>
+	<body>
+		<canvas id="scene" width="600" height="600"></canvas>
+	</body>
+
+	<script type="text/javascript" src="requestAnimationFramePollyfill.js"></script>
+	<script type="text/javascript" src="raining-scene.js"></script>
+	<script type="text/javascript" src="raindrop.js"></script>
+	<script type="text/javascript" src="raindrop-collision-effect.js"></script>
+	<script type="text/javascript" src="umbrella.js"></script>
+
+	<script type="text/javascript">
+		window.onload = function() {
+			var canvas = document.getElementById("scene"),
+				rainingScene = new RainingNamespace.RainingScene({
+					canvas: canvas
+				});
+
+			rainingScene.render();
+		}
+	</script>
+</html>
+
+<!--http://demos.seb.ly/JSSnowNew/snow3d.html-->
+
+<!--TODO:
+1. create collision effect upon hitting the ground or umbrella
+3. optimize collision detection
+3. generate flashing lightening effect -->
