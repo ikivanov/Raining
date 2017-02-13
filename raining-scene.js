@@ -59,11 +59,22 @@
 			var that = this,
 				collisionEffect = new RainingNamespace.RaindropCollisionEffect({context: that.context,
 												scene: this,
-												position: raindrop.position});
+												position: {
+													x: raindrop.position.x,
+													y: raindrop.position.y <= HEIGHT ? raindrop.position.y : HEIGHT
+												}
+											});
 
 			that.collisionEffects.push(collisionEffect);
 
 			raindrop.reset();
+		},
+
+		onCollisionEffectDone: function(collisionEffect) {
+			var that = this,
+				index = that.collisionEffects.indexOf(collisionEffect);
+
+			that.collisionEffects.splice(index, 1);
 		},
 
 		_generateRaindrops: function() {
