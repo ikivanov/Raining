@@ -27,6 +27,11 @@
 		that.collisionEffects = [];
 
 		that.umbrella = new RainingNamespace.Umbrella({context: that.context, scene: this});
+
+		that.lastLighteningTime = new Date();
+		that.nextLightheningInterval = that.randomRange(5000, 10000);
+
+		that.lighteningEffect = null;
 	}
 
 	RainingScene.prototype = {
@@ -77,6 +82,13 @@
 			that.collisionEffects.splice(index, 1);
 		},
 
+		onLighteningEffectDone: function(effect) {
+			var that = this;
+
+			that.lighteningEffect = null;
+			that.nextLightheningInterval = that.randomRange(5000, 10000);
+		},
+
 		_generateRaindrops: function() {
 			var that = this;
 
@@ -104,6 +116,16 @@
 			}
 
 			that.umbrella.update();
+
+			var now = new Date();
+			if (now.getTime() - that.lastLighteningTime.getTime() > that.nextLightheningInterval) {
+				that.lighteningEffect = new RainingNamespace.LighteningEffect({context: that.context, scene: this, begin: now});
+				that.lastLighteningTime = now;
+			}
+
+			if (that.lighteningEffect) {
+				that.lighteningEffect.update();
+			}
 		},
 
 		_render: function() {
@@ -128,6 +150,10 @@
 			that.umbrella.render();
 
 			that._renderFPS();
+
+			if (that.lighteningEffect) {
+				that.lighteningEffect.render();
+			}
 		},
 
 		_renderBackground: function() {
@@ -163,6 +189,11 @@
 			image.src = filename;
 			return image;
 		},
+
+		randomRange: function(min, max)
+		{
+			return ((Math.random()*(max - min)) + min);
+		}
 	};
 
 	window.RainingNamespace = window.RainingNamespace || {};
