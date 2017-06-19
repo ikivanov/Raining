@@ -1,72 +1,62 @@
 (function() {
-	function Raindrop(config) {
-		var that = this;
+	class Raindrop {
+		constructor(config) {
+			this.context = config.context;
+			this.scene = config.scene;
 
-		that.context = config.context;
-		that.scene = config.scene;
+			this.position = { x: 0, y: 0 };
+			this.speedVector = { x: 0, y: 0, z: 0 };
+			this.length = 0;
+			this.isFallen = false;
 
-		that.speedVector = { x: 0, y: 0	};
-		that.position = { x: 0, y: 0 };
-		that.speedVector = { x: 0, y: 0, z: 0 };
-		that.length = 0;
-		that.isFallen = false;
+			this.reset();
+		}
 
-		that.reset();
-	}
+		reset() {
+			this.length = Math.floor(this.randomRange(MAX_LENGTH / 2, MAX_LENGTH));
+			this.position.x = Math.floor(this.randomRange(1, WIDTH));
+			this.position.y = -Math.floor(this.randomRange(1, HEIGHT));
+			this.speedVector.x = 0;
+			this.speedVector.y = 0.75 * this.length;
+			this.speedVector.z = 0;
+			this.isFallen = false;
+		}
 
-	Raindrop.prototype = {
-		reset: function() {
-			var that = this;
+		_isVisible() {
+			return this.position.x > 0 && this.position.x < WIDTH &&
+					this.position.y > 0  && this.position.y < HEIGHT;
+		}
 
-			that.length = Math.floor(that.randomRange(MAX_LENGTH / 2, MAX_LENGTH));
-			that.position.x = Math.floor(that.randomRange(1, WIDTH));
-			that.position.y = -Math.floor(that.randomRange(1, HEIGHT));
-			that.speedVector.x = 0;
-			that.speedVector.y = 0.75 * that.length;
-			that.speedVector.z = 0;
-			that.isFallen = false;
-		},
-
-		_isVisible: function() {
-			var that = this;
-
-			return that.position.x > 0 && that.position.x < WIDTH &&
-					that.position.y > 0  && that.position.y < HEIGHT;
-		},
-
-		update: function () {
-			var that = this;
-
-			if (that.isFallen) {
+		update() {
+			if (this.isFallen) {
 				return;
 			}
 
-			that.position.x += that.speedVector.x;
-			that.position.y += that.speedVector.y;
+			this.position.x += this.speedVector.x;
+			this.position.y += this.speedVector.y;
 
-			that.isFallen = that.scene.hasCollision(that);
+			this.isFallen = this.scene.hasCollision(this);
 
-			if (that.isFallen) {
-				that.scene.onRaindropFallen(that);
+			if (this.isFallen) {
+				this.scene.onRaindropFallen(this);
 			}
-		},
+		}
 
-		render: function() {
-			var that = this,
-				ctx = that.context;
+		render() {
+			let ctx = this.context;
 
-			if (that.isFallen || !that._isVisible()) {
+			if (this.isFallen || !this._isVisible()) {
 				return;
 			}
 
 			ctx.beginPath();
 			ctx.strokeStyle = 'white';
-			ctx.moveTo(that.position.x, that.position.y);
-			ctx.lineTo(that.position.x, that.position.y + that.length);
+			ctx.moveTo(this.position.x, this.position.y);
+			ctx.lineTo(this.position.x, this.position.y + this.length);
 			ctx.stroke();
-		},
+		}
 
-		randomRange: function(min, max)
+		randomRange(min, max)
 		{
 			return ((Math.random()*(max - min)) + min);
 		}

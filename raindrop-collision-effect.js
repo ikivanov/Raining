@@ -1,59 +1,54 @@
 (function() {
-	function RaindropCollisionEffect(config) {
-		var that = this;
+	class RaindropCollisionEffect {
+		constructor(config) {
+			this.context = config.context;
+			this.scene = config.scene;
+			this.x = config.position.x;
+			this.y = config.position.y;
+			this.isActive = true;
 
-		that.context = config.context;
-		that.scene = config.scene;
-		that.x = config.position.x;
-		that.y = config.position.y;
-		that.isActive = true;
+			this.particles = [];
 
-		that.particles = [];
-
-		for (var i = 0; i < PARTICLES_COUNT; i++) {
-			that.particles.push({
-				x: that.x,
-				y: that.y,
-				speedX: (Math.random() * 4-2),
-				speedY : (Math.random() * -4),
-				radius : 0.65 + Math.floor(Math.random() * 1.6)
-			});
+			for (let i = 0; i < PARTICLES_COUNT; i++) {
+				this.particles.push({
+					x: this.x,
+					y: this.y,
+					speedX: (Math.random() * 4-2),
+					speedY : (Math.random() * -4),
+					radius : 0.65 + Math.floor(Math.random() * 1.6)
+				});
+			}
 		}
-	}
 
-	RaindropCollisionEffect.prototype = {
-		update: function () {
-			var that = this;
-
-			if (!that.isActive)
+		update() {
+			if (!this.isActive)
 				return;
 
-			for (var i = 0; i < that.particles.length; i++) {
-				var particle = that.particles[i];
+			for (let i = 0; i < this.particles.length; i++) {
+				let particle = this.particles[i];
 
 				particle.x += particle.speedX;
 				particle.y += particle.speedY;
 				particle.radius -= 0.075;
 			}
 
-			that.particles = that.particles.filter(item => item.radius > 0);
-			that.isActive = that.particles.length > 0;
+			this.particles = this.particles.filter(item => item.radius > 0);
+			this.isActive = this.particles.length > 0;
 
-			if (!that.isActive) {
-				that.scene.onCollisionEffectDone(that);
+			if (!this.isActive) {
+				this.scene.onCollisionEffectDone(this);
 			}
-		},
+		}
 
-		render: function() {
-			var that = this,
-				ctx = that.context;
+		render() {
+			let ctx = this.context;
 
-			if (!that.isActive) {
+			if (!this.isActive) {
 				return;
 			}
 
-			for (var i = 0; i < that.particles.length; i++) {
-				var particle = that.particles[i];
+			for (let i = 0; i < this.particles.length; i++) {
+				let particle = this.particles[i];
 
 				ctx.beginPath();
 				ctx.strokeStyle = 'white';

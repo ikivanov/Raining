@@ -1,38 +1,33 @@
 (function() {
-	function Umbrella(config) {
-		var that = this;
+	class Umbrella {
+		constructor(config) {
+			this.context = config.context;
+			this.scene = config.scene;
+			this.radius = 100;
 
-		that.context = config.context;
-		that.scene = config.scene;
-		that.radius = 100;
+			this.position = { x: WIDTH / 2, y: HEIGHT / 2 };
+		}
 
-		that.position = { x: WIDTH / 2, y: HEIGHT / 2 };
-	}
+		update() {
+			this.position.x = this.scene.mouse.x;
+			this.position.y = this.scene.mouse.y;
+		}
 
-	Umbrella.prototype = {
-		update: function () {
-			var that = this;
-
-			that.position.x = that.scene.mouse.x;
-			that.position.y = that.scene.mouse.y;
-		},
-
-		render: function() {
-			var that = this,
-				ctx = that.context;
+		render() {
+			let ctx = this.context;
 
 			ctx.beginPath();
 			ctx.strokeStyle = 'white';
 			ctx.fillStyle = "gray";
-			ctx.arc(that.position.x, that.position.y, that.radius, Math.PI, 0);
+			ctx.arc(this.position.x, this.position.y, this.radius, Math.PI, 0);
 			ctx.fill();
-			ctx.moveTo(that.position.x - that.radius, that.position.y);
-			ctx.lineTo(that.position.x + that.radius, that.position.y);
-			ctx.moveTo(that.position.x, that.position.y);
-			ctx.lineTo(that.position.x, that.position.y + that.radius);
+			ctx.moveTo(this.position.x - this.radius, this.position.y);
+			ctx.lineTo(this.position.x + this.radius, this.position.y);
+			ctx.moveTo(this.position.x, this.position.y);
+			ctx.lineTo(this.position.x, this.position.y + this.radius);
 			ctx.stroke();
 			ctx.beginPath();
-			ctx.arc(that.position.x + 15, that.position.y + that.radius, 15, Math.PI, 0, true);
+			ctx.arc(this.position.x + 15, this.position.y + this.radius, 15, Math.PI, 0, true);
 			ctx.stroke();
 		}
 	};

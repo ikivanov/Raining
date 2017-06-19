@@ -1,50 +1,46 @@
 (function() {
-	function LighteningEffect(config) {
-		var that = this;
+	class LighteningEffect {
+		constructor(config) {
+			this.context = config.context;
+			this.scene = config.scene;
+			this.begin = config.begin;
+			this.duration = 250;
 
-		that.context = config.context;
-		that.scene = config.scene;
-		that.begin = config.begin;
-		that.duration = 250;
+			this.currentFlashIndex = 0;
+			this.flashes = [
+				{
+					duration: 250,
+					isDone: false
+				},
+				{
+					duration: 150,
+					isDone: false,
+					isDummy: true
+				},
+				{
+					duration: 100,
+					isDone: false
+				}
+			];
+		}
 
-		that.currentFlashIndex = 0;
-		that.flashes = [
-			{
-				duration: 250,
-				isDone: false
-			},
-			{
-				duration: 150,
-				isDone: false,
-				isDummy: true
-			},
-			{
-				duration: 100,
-				isDone: false
-			}
-		]
-	}
+		update() {
+			let now = new Date(),
+				flash = this.flashes[this.currentFlashIndex];
 
-	LighteningEffect.prototype = {
-		update: function () {
-			var that = this,
-				now = new Date(),
-				flash = that.flashes[that.currentFlashIndex];
-
-			if (now.getTime() - that.begin.getTime() > flash.duration) {
-				if (that.currentFlashIndex < that.flashes.length - 1) {
-					that.begin = new Date();
-					that.currentFlashIndex++;
+			if (now.getTime() - this.begin.getTime() > flash.duration) {
+				if (this.currentFlashIndex < this.flashes.length - 1) {
+					this.begin = new Date();
+					this.currentFlashIndex++;
 				} else {
-					that.scene.onLighteningEffectDone(that);
+					this.scene.onLighteningEffectDone(this);
 				}
 			}
-		},
+		}
 
-		render: function() {
-			var that = this,
-				ctx = that.context,
-				flash = that.flashes[that.currentFlashIndex];
+		render() {
+			let ctx = this.context,
+				flash = this.flashes[this.currentFlashIndex];
 
 			if (flash.isDummy) {
 				return;

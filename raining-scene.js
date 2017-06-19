@@ -1,68 +1,62 @@
 (function() {
-	function RainingScene(config) {
-		var that = this;
+	class RainingScene {
+		constructor(config) {
+			this.canvas = config.canvas;
+			this.context = this.canvas.getContext("2d");
 
-		that.canvas = config.canvas;
-		that.context = that.canvas.getContext("2d");
+			this.background = this._getImage("images/background.png");
 
-		that.background = that._getImage("images/background.png");
+			this.oldTime = new Date();
+			this.framesCounter = 0;
+			this.fps = 0;
 
-		that.oldTime = new Date();
-		that.framesCounter = 0;
-		that.fps = 0;
+			this.mouse = {
+				x: 0,
+				y: 0
+			};
 
-		that.mouse = {
-			x: 0,
-			y: 0
-		};
+			window.onmousemove = (event) => {
+				this.mouse.x = event.clientX;
+				this.mouse.y = event.clientY;
+			}
 
-		window.onmousemove = function(event) {
-			that.mouse.x = event.clientX;
-			that.mouse.y = event.clientY;
+			this.raindrops = [];
+			this._generateRaindrops();
+
+			this.collisionEffects = [];
+
+			this.umbrella = new RainingNamespace.Umbrella({context: this.context, scene: this});
+
+			this.lastLighteningTime = new Date();
+			this.nextLightheningInterval = this.randomRange(5000, 10000);
+
+			this.lighteningEffect = null;
 		}
 
-		that.raindrops = [];
-		that._generateRaindrops();
+		render() {
+			requestAnimationFrame(this.render.bind(this));
 
-		that.collisionEffects = [];
+			this._update();
 
-		that.umbrella = new RainingNamespace.Umbrella({context: that.context, scene: this});
+			this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+			this._render();
+		}
 
-		that.lastLighteningTime = new Date();
-		that.nextLightheningInterval = that.randomRange(5000, 10000);
-
-		that.lighteningEffect = null;
-	}
-
-	RainingScene.prototype = {
-		render: function() {
-			var that = this;
-
-			requestAnimationFrame(that.render.bind(that));
-
-			that._update();
-
-			that.context.clearRect(0, 0, that.canvas.width, that.canvas.height);
-			that._render();
-		},
-
-		hasCollision: function(raindrop) {
-			var that = this,
-				rainDropDummyRadius = 1,
-				dx = raindrop.position.x - that.umbrella.position.x,
-				dy = (raindrop.position.y + raindrop.length) - that.umbrella.position.y,
+		hasCollision(raindrop) {
+			let rainDropDummyRadius = 1,
+				dx = raindrop.position.x - this.umbrella.position.x,
+				dy = (raindrop.position.y + raindrop.length) - this.umbrella.position.y,
 				distance = Math.sqrt(dx * dx + dy * dy);
 
-			if (distance < rainDropDummyRadius + that.umbrella.radius) {
+			if (distance < rainDropDummyRadius + this.umbrella.radius) {
 				return true;
 			}
 
 			return raindrop.position.y > HEIGHT;
-		},
+		}
 
-		onRaindropFallen: function(raindrop) {
-			var that = this,
-				collisionEffect = new RainingNamespace.RaindropCollisionEffect({context: that.context,
+		onRaindropFallen(raindrop) {
+			let collisionEffect = new RainingNamespace.RaindropCollisionEffect({context: this.context,
 												scene: this,
 												position: {
 													x: raindrop.position.x,
@@ -70,44 +64,37 @@
 												}
 											});
 
-			that.collisionEffects.push(collisionEffect);
+			this.collisionEffects.push(collisionEffect);
 
 			raindrop.reset();
-		},
+		}
 
-		onCollisionEffectDone: function(collisionEffect) {
-			var that = this,
-				index = that.collisionEffects.indexOf(collisionEffect);
+		onCollisionEffectDone(collisionEffect) {
+			let index = this.collisionEffects.indexOf(collisionEffect);
 
-			that.collisionEffects.splice(index, 1);
-		},
+			this.collisionEffects.splice(index, 1);
+		}
 
-		onLighteningEffectDone: function(effect) {
-			var that = this;
+		onLighteningEffectDone(effect) {
+			this.lighteningEffect = null;
+			this.nextLightheningInterval = this.randomRange(5000, 10000);
+		}
 
-			that.lighteningEffect = null;
-			that.nextLightheningInterval = that.randomRange(5000, 10000);
-		},
+		_generateRaindrops() {
+			for (let i = 0; i < RAINDROPS_COUNT; i++) {
+				let raindrop = new RainingNamespace.Raindrop({context: this.context, scene: this});
 
-		_generateRaindrops: function() {
-			var that = this;
-
-			for (var i = 0; i < RAINDROPS_COUNT; i++) {
-				var raindrop = new RainingNamespace.Raindrop({context: that.context, scene: this});
-
-				that.raindrops.push(raindrop);
+				this.raindrops.push(raindrop);
 			}
-		},
+		}
 
-		_update: function() {
-			var that = this;
-
-			for (var i = 0; i < that.raindrops.length; i++) {
-				that.raindrops[i].update();
+		_update() {
+			for (let i = 0; i < this.raindrops.length; i++) {
+				this.raindrops[i].update();
 			}
 
-			for (var j = 0; j < that.collisionEffects.length; j++) {
-				var effect = that.collisionEffects[j];
+			for (let j = 0; j < this.collisionEffects.length; j++) {
+				let effect = this.collisionEffects[j];
 
 				if (!effect.isActive)
 					continue;
@@ -115,31 +102,30 @@
 				effect.update();
 			}
 
-			that.umbrella.update();
+			this.umbrella.update();
 
-			var now = new Date();
-			if (now.getTime() - that.lastLighteningTime.getTime() > that.nextLightheningInterval) {
-				that.lighteningEffect = new RainingNamespace.LighteningEffect({context: that.context, scene: this, begin: now});
-				that.lastLighteningTime = now;
+			let now = new Date();
+			if (now.getTime() - this.lastLighteningTime.getTime() > this.nextLightheningInterval) {
+				this.lighteningEffect = new RainingNamespace.LighteningEffect({context: this.context, scene: this, begin: now});
+				this.lastLighteningTime = now;
 			}
 
-			if (that.lighteningEffect) {
-				that.lighteningEffect.update();
+			if (this.lighteningEffect) {
+				this.lighteningEffect.update();
 			}
-		},
+		}
 
-		_render: function() {
-			var that = this,
-				ctx = that.context;
+		_render() {
+			let ctx = this.context;
 
-			that._renderBackground();
+			this._renderBackground();
 
-			for (var i = 0; i < that.raindrops.length; i++) {
-				that.raindrops[i].render();
+			for (let i = 0; i < this.raindrops.length; i++) {
+				this.raindrops[i].render();
 			}
 
-			for (var j = 0; j < that.collisionEffects.length; j++) {
-				var effect = that.collisionEffects[j];
+			for (let j = 0; j < this.collisionEffects.length; j++) {
+				let effect = this.collisionEffects[j];
 
 				if (!effect.isActive)
 					continue;
@@ -147,50 +133,48 @@
 				effect.render();
 			}
 
-			that.umbrella.render();
+			this.umbrella.render();
 
-			that._renderFPS();
+			this._renderFPS();
 
-			if (that.lighteningEffect) {
-				that.lighteningEffect.render();
+			if (this.lighteningEffect) {
+				this.lighteningEffect.render();
 			}
-		},
+		}
 
-		_renderBackground: function() {
-			var that = this,
-				ctx = that.context;
+		_renderBackground() {
+			let ctx = this.context;
 
 			ctx.fillStyle = "black";
 			ctx.fillRect(0, 0, WIDTH, HEIGHT);
-		},
+		}
 
-		_renderFPS: function() {
-			var that = this,
-				now = new Date(),
-				ctx = that.context,
-				diff = now.getTime() - that.oldTime.getTime();
+		_renderFPS() {
+			let now = new Date(),
+				ctx = this.context,
+				diff = now.getTime() - this.oldTime.getTime();
 
 			if (diff < 1000) {
-				that.framesCounter++;
+				this.framesCounter++;
 			} else {
-				that.fps = that.framesCounter;
-				that.framesCounter = 0;
-				that.oldTime = new Date();
+				this.fps = this.framesCounter;
+				this.framesCounter = 0;
+				this.oldTime = new Date();
 			}
 
 			ctx.font = "14px Arial";
 			ctx.fillStyle = "white";
 			ctx.textAlign = "left";
-			ctx.fillText("fps: " + that.fps, 550, 25);
-		},
+			ctx.fillText("fps: " + this.fps, 550, 25);
+		}
 
-		_getImage: function(filename) {
-			var image = new Image();
+		_getImage(filename) {
+			let image = new Image();
 			image.src = filename;
 			return image;
-		},
+		}
 
-		randomRange: function(min, max)
+		randomRange(min, max)
 		{
 			return ((Math.random()*(max - min)) + min);
 		}
